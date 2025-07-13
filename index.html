@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.8) 0%, rgba(238, 90, 82, 0.8) 100%), url('game6.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .image-part {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .image-part.revealed {
+            opacity: 1;
+        }
+
+        .image-part.part1 {
+            background-image: url('game5.png');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 40%, 0% 40%);
+        }
+
+        .image-part.part2 {
+            background-image: url('game5.png');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0% 40%, 100% 40%, 100% 60%, 0% 60%);
+        }
+
+        .image-part.part3 {
+            background-image: url('game5.png');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0% 60%, 100% 60%, 100% 80%, 0% 80%);
+        }
+
+        .image-part.part4 {
+            background-image: url('game5.png');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0% 80%, 100% 80%, 100% 90%, 0% 90%);
+        }
+
+        .image-part.part5 {
+            background-image: url('game5.png');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0% 90%, 100% 90%, 100% 100%, 0% 100%);
+        }
+
+        .word-display {
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            margin: 30px 0;
+            color: #333;
+            min-height: 60px;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 10px;
+            margin: 30px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .key {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 40px;
+        }
+
+        .key:hover {
+            background: #ee5a52;
+            transform: translateY(-2px);
+        }
+
+        .key.used {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .key.correct {
+            background: #4CAF50;
+        }
+
+        .key.wrong {
+            background: #f44336;
+        }
+
+        .game-info {
+            margin: 20px 0;
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .lives {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+
+        .message {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .message.win {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.lose {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .restart-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .category {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: inline-block;
+        }
+
+        .signature {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #d63031;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .word-display {
+                font-size: 1.5em;
+            }
+            
+            .keyboard {
+                grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+                gap: 8px;
+            }
+            
+            .key {
+                padding: 10px;
+                font-size: 1em;
+            }
+
+            .image-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .signature {
+                top: 10px;
+                right: 10px;
+                font-size: 0.8em;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="signature">X: 0xCSauron</div>
+        <h1>🎯 Hangman Game</h1>
+        <div class="category">Category: Anomage & Blockchain</div>
+        
+        <div class="image-container" id="imageContainer">
+            <div class="image-part part1" id="part1"></div>
+            <div class="image-part part2" id="part2"></div>
+            <div class="image-part part3" id="part3"></div>
+            <div class="image-part part4" id="part4"></div>
+            <div class="image-part part5" id="part5"></div>
+        </div>
+        
+        <div class="word-display" id="wordDisplay"></div>
+        
+        <div class="game-info">
+            <div class="lives" id="lives"></div>
+            <div id="message"></div>
+        </div>
+        
+        <div class="keyboard" id="keyboard"></div>
+        
+        <button class="restart-btn" id="restartBtn" style="display: none;">New Game</button>
+    </div>
+
+    <script>
+        const words = [
+            'shrimp', 'anomage', 'mage', 'intent master', 'wizard', 'heliax', 
+            'intent games', 'sloths', 'v nft', 'intent', 'solver', 'relayer', 
+            'constraint', 'resource', 'privacy', 'namada', 'zkp', 'composability', 
+            'shielded', 'masp', 'barter', 'coordination', 'multi-chain', 'modular', 
+            'cryptographic trust', 'mev resistance', 'ferveo', 'decentralization', 
+            'interoperability'
+        ];
+
+        class HangmanGame {
+            constructor() {
+                this.words = words;
+                this.currentWord = '';
+                this.guessedLetters = new Set();
+                this.lives = 5;
+                this.gameOver = false;
+                this.init();
+            }
+
+            init() {
+                this.currentWord = this.getRandomWord();
+                this.guessedLetters.clear();
+                this.lives = 5;
+                this.gameOver = false;
+                this.updateDisplay();
+                this.createKeyboard();
+                this.hideMessage();
+                this.resetImageParts();
+                document.getElementById('restartBtn').style.display = 'none';
+            }
+
+            getRandomWord() {
+                return this.words[Math.floor(Math.random() * this.words.length)];
+            }
+
+            resetImageParts() {
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`part${i}`).classList.remove('revealed');
+                }
+            }
+
+            updateDisplay() {
+                // Update image parts based on lives lost
+                const partsRevealed = 5 - this.lives;
+                for (let i = 1; i <= 5; i++) {
+                    const part = document.getElementById(`part${i}`);
+                    if (i <= partsRevealed) {
+                        part.classList.add('revealed');
+                    } else {
+                        part.classList.remove('revealed');
+                    }
+                }
+                
+                // Update word display
+                const wordDisplay = this.currentWord
+                    .split('')
+                    .map(letter => {
+                        if (letter === ' ') return ' ';
+                        return this.guessedLetters.has(letter.toLowerCase()) ? letter.toUpperCase() : '_';
+                    })
+                    .join(' ');
+                
+                document.getElementById('wordDisplay').textContent = wordDisplay;
+                
+                // Update lives
+                document.getElementById('lives').textContent = `Lives: ${this.lives}`;
+            }
+
+            createKeyboard() {
+                const keyboard = document.getElementById('keyboard');
+                keyboard.innerHTML = '';
+                
+                const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+                
+                letters.forEach(letter => {
+                    const key = document.createElement('button');
+                    key.className = 'key';
+                    key.textContent = letter.toUpperCase();
+                    key.addEventListener('click', () => this.guessLetter(letter));
+                    
+                    if (this.guessedLetters.has(letter)) {
+                        key.classList.add('used');
+                        if (this.currentWord.toLowerCase().includes(letter)) {
+                            key.classList.add('correct');
+                        } else {
+                            key.classList.add('wrong');
+                        }
+                    }
+                    
+                    keyboard.appendChild(key);
+                });
+            }
+
+            guessLetter(letter) {
+                if (this.gameOver || this.guessedLetters.has(letter)) {
+                    return;
+                }
+
+                this.guessedLetters.add(letter);
+                
+                if (!this.currentWord.toLowerCase().includes(letter)) {
+                    this.lives--;
+                }
+                
+                this.updateDisplay();
+                this.createKeyboard();
+                
+                this.checkGameEnd();
+            }
+
+            checkGameEnd() {
+                const isWordGuessed = this.currentWord
+                    .split('')
+                    .filter(letter => letter !== ' ')
+                    .every(letter => this.guessedLetters.has(letter.toLowerCase()));
+                
+                if (isWordGuessed) {
+                    this.gameOver = true;
+                    this.showMessage(`Congratulations! You found the word: ${this.currentWord.toUpperCase()} +100 Intent`, 'win');
+                } else if (this.lives <= 0) {
+                    this.gameOver = true;
+                    this.showMessage(`Game Over! The word was: ${this.currentWord.toUpperCase()}`, 'lose');
+                }
+                
+                if (this.gameOver) {
+                    document.getElementById('restartBtn').style.display = 'inline-block';
+                }
+            }
+
+            showMessage(text, type) {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = text;
+                messageEl.className = `message ${type}`;
+            }
+
+            hideMessage() {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = '';
+                messageEl.className = '';
+            }
+
+            restart() {
+                this.init();
+            }
+        }
+
+        // Initialize game
+        const game = new HangmanGame();
+        
+        // Add restart button functionality
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            game.restart();
+        });
+
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key >= 'a' && key <= 'z') {
+                game.guessLetter(key);
+            }
+        });
+    </script>
+</body>
+</html> 
